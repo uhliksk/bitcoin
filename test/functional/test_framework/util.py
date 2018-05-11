@@ -301,6 +301,9 @@ def initialize_datadir(dirname, n):
         f.write("keypool=1\n")
         f.write("discover=0\n")
         f.write("listenonion=0\n")
+        f.write("printtoconsole=0\n")
+        os.makedirs(os.path.join(datadir, 'stderr'), exist_ok=True)
+        os.makedirs(os.path.join(datadir, 'stdout'), exist_ok=True)
     return datadir
 
 def get_datadir_path(dirname, n):
@@ -349,7 +352,14 @@ def set_node_times(nodes, t):
 
 def disconnect_nodes(from_connection, node_num):
     for peer_id in [peer['id'] for peer in from_connection.getpeerinfo() if "testnode%d" % node_num in peer['subver']]:
-        from_connection.disconnectnode(nodeid=peer_id)
+        try:
+            from_connection.disconnectnode(nodeid=peer_id)
+        except JSONRPCException as e:
+            # If this node is disconnected between calculating the peer id
+            # and issuing the disconnect, don't worry about it.
+            # This avoids a race condition if we're mass-disconnecting peers.
+            if e.error['code'] != -29: # RPC_CLIENT_NODE_NOT_CONNECTED
+                raise
 
     # wait to disconnect
     wait_until(lambda: [peer['id'] for peer in from_connection.getpeerinfo() if "testnode%d" % node_num in peer['subver']] == [], timeout=5)
@@ -556,3 +566,14 @@ def mine_large_block(node, utxos=None):
     fee = 100 * node.getnetworkinfo()["relayfee"]
     create_lots_of_big_transactions(node, txouts, utxos, num, fee=fee)
     node.generate(1)
+
+def find_vout_for_address(node, txid, addr):
+    """
+    Locate the vout index of the given transaction sending to the
+    given address. Raises runtime error exception if not found.
+    """
+    tx = node.getrawtransaction(txid, True)
+    for i in range(len(tx["vout"])):
+        if any([addr == a for a in tx["vout"][i]["scriptPubKey"]["addresses"]]):
+            return i
+    raise RuntimeError("Vout not found for address: txid=%s, addr=%s" % (txid, addr))
