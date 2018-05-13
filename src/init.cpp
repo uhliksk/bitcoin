@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2017 The Bitcoin Core developers
+// Copyright (c) 2018 FXTC developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -484,6 +485,7 @@ void SetupServerArgs()
 
     gArgs.AddArg("-blockmaxweight=<n>", strprintf(_("Set maximum BIP141 block weight (default: %d)"), DEFAULT_BLOCK_MAX_WEIGHT), false, OptionsCategory::BLOCK_CREATION);
     gArgs.AddArg("-blockmintxfee=<amt>", strprintf(_("Set lowest fee rate (in %s/kB) for transactions to be included in block creation. (default: %s)"), CURRENCY_UNIT, FormatMoney(DEFAULT_BLOCK_MIN_TX_FEE)), false, OptionsCategory::BLOCK_CREATION);
+    gArgs.AddArg("-algo=<algo>", strprintf(_("Mining algorithm: sha256d, scrypt, nist5, lyra2z, x11 (default: sha256d)")), false, OptionsCategory::BLOCK_CREATION);
     gArgs.AddArg("-blockversion=<n>", "Override block version to test forking scenarios", true, OptionsCategory::BLOCK_CREATION);
 
     gArgs.AddArg("-rest", strprintf(_("Accept public REST requests (default: %u)"), DEFAULT_REST_ENABLE), false, OptionsCategory::RPC);
@@ -1149,6 +1151,23 @@ bool AppInitParameterInteraction()
             }
         }
     }
+
+    // algo switch
+    std::string strAlgo = gArgs.GetArg("-algo","sha256d");
+    transform(strAlgo.begin(), strAlgo.end(), strAlgo.begin(), ::tolower);
+    if (strAlgo == "sha256d")
+         miningAlgo = ALGO_SHA256D;
+    else if (strAlgo == "scrypt")
+         miningAlgo = ALGO_SCRYPT;
+    else if (strAlgo == "nist5")
+         miningAlgo = ALGO_NIST5;
+    else if (strAlgo == "lyra2z")
+         miningAlgo = ALGO_LYRA2Z;
+    else if (strAlgo == "x11")
+         miningAlgo = ALGO_X11;
+    else
+         miningAlgo = ALGO_SHA256D; // FXTC TODO: we should not be here
+
     return true;
 }
 
