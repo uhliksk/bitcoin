@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2017 The Bitcoin Core developers
+// Copyright (c) 2018 FXTC developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -46,7 +47,7 @@ static void SetupCliArgs()
     gArgs.AddArg("-rpcport=<port>", strprintf(_("Connect to JSON-RPC on <port> (default: %u or testnet: %u)"), defaultBaseParams->RPCPort(), testnetBaseParams->RPCPort()), false, OptionsCategory::OPTIONS);
     gArgs.AddArg("-rpcuser=<user>", _("Username for JSON-RPC connections"), false, OptionsCategory::OPTIONS);
     gArgs.AddArg("-rpcwait", _("Wait for RPC server to start"), false, OptionsCategory::OPTIONS);
-    gArgs.AddArg("-rpcwallet=<walletname>", _("Send RPC for non-default wallet on RPC server (needs to exactly match corresponding -wallet option passed to bitcoind)"), false, OptionsCategory::OPTIONS);
+    gArgs.AddArg("-rpcwallet=<walletname>", _("Send RPC for non-default wallet on RPC server (needs to exactly match corresponding -wallet option passed to fxtcd)"), false, OptionsCategory::OPTIONS);
     gArgs.AddArg("-stdin", _("Read extra arguments from standard input, one per line until EOF/Ctrl-D (recommended for sensitive information such as passphrases).  When combined with -stdinrpcpass, the first line from standard input is used for the RPC password."), false, OptionsCategory::OPTIONS);
     gArgs.AddArg("-stdinrpcpass", strprintf(_("Read RPC password from standard input as a single line.  When combined with -stdin, the first line from standard input is used for the RPC password.")), false, OptionsCategory::OPTIONS);
 }
@@ -85,10 +86,10 @@ static int AppInitRPC(int argc, char* argv[])
         std::string strUsage = strprintf(_("%s RPC client version"), _(PACKAGE_NAME)) + " " + FormatFullVersion() + "\n";
         if (!gArgs.IsArgSet("-version")) {
             strUsage += "\n" + _("Usage:") + "\n" +
-                  "  bitcoin-cli [options] <command> [params]  " + strprintf(_("Send command to %s"), _(PACKAGE_NAME)) + "\n" +
-                  "  bitcoin-cli [options] -named <command> [name=value] ... " + strprintf(_("Send command to %s (with named arguments)"), _(PACKAGE_NAME)) + "\n" +
-                  "  bitcoin-cli [options] help                " + _("List commands") + "\n" +
-                  "  bitcoin-cli [options] help <command>      " + _("Get help for a command") + "\n";
+                  "  fxtc-cli [options] <command> [params]  " + strprintf(_("Send command to %s"), _(PACKAGE_NAME)) + "\n" +
+                  "  fxtc-cli [options] -named <command> [name=value] ... " + strprintf(_("Send command to %s (with named arguments)"), _(PACKAGE_NAME)) + "\n" +
+                  "  fxtc-cli [options] help                " + _("List commands") + "\n" +
+                  "  fxtc-cli [options] help <command>      " + _("Get help for a command") + "\n";
 
             strUsage += "\n" + gArgs.GetHelpMessage();
         }
@@ -451,7 +452,7 @@ static int CommandLineRPC(int argc, char *argv[])
                             strPrint += "error message:\n"+errMsg.get_str();
 
                         if (errCode.isNum() && errCode.get_int() == RPC_WALLET_NOT_SPECIFIED) {
-                            strPrint += "\nTry adding \"-rpcwallet=<filename>\" option to bitcoin-cli command line.";
+                            strPrint += "\nTry adding \"-rpcwallet=<filename>\" option to fxtc-cli command line.";
                         }
                     }
                 } else {
