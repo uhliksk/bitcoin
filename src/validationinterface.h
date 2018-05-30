@@ -63,7 +63,11 @@ protected:
     //
 
     /**
-     * Notifies listeners of updated block chain tip
+     * Notifies listeners when the block chain tip advances.
+     *
+     * When multiple blocks are connected at once, UpdatedBlockTip will be called on the final tip
+     * but may not be called on every intermediate tip. If the latter behavior is desired,
+     * subscribe to BlockConnected() instead.
      *
      * Called on a background thread.
      */
